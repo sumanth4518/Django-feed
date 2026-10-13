@@ -13,24 +13,24 @@
                     <div class="brand-icon mx-auto mb-3" style="width: 48px; height: 48px; font-size: 1.5rem;">
                         <i class="bi bi-box-arrow-in-right"></i>
                     </div>
-                    <h2 class="fw-bold mb-1">Welcome Back!</h2>
+                    <h2 class="fw-bold mb-1">Welcome Back how are you!</h2>
                     <p class="text-secondary small">Log in with your credentials to access your feed.</p>
                 </div>
 
                 <!-- Non-field errors -->
                 {% if form.non_field_errors %}
-                    <div class="alert alert-danger py-2 px-3 small rounded-3 mb-3">
-                        {% for error in form.non_field_errors %}
-                            <div><i class="bi bi-exclamation-circle-fill me-1"></i> {{ error }}</div>
-                        {% endfor %}
-                    </div>
+                <div class="alert alert-danger py-2 px-3 small rounded-3 mb-3">
+                    {% for error in form.non_field_errors %}
+                    <div><i class="bi bi-exclamation-circle-fill me-1"></i> {{ error }}</div>
+                    {% endfor %}
+                </div>
                 {% endif %}
 
                 <!-- Login Form -->
                 <form method="POST" novalidate>
                     {% csrf_token %}
                     {% if next %}
-                        <input type="hidden" name="next" value="{{ next }}">
+                    <input type="hidden" name="next" value="{{ next }}">
                     {% endif %}
 
                     <!-- Username Field -->
@@ -40,11 +40,11 @@
                         </label>
                         {{ form.username }}
                         {% if form.username.errors %}
-                            <div class="text-danger small mt-1">
-                                {% for error in form.username.errors %}
-                                    <div><i class="bi bi-x-circle me-1"></i>{{ error }}</div>
-                                {% endfor %}
-                            </div>
+                        <div class="text-danger small mt-1">
+                            {% for error in form.username.errors %}
+                            <div><i class="bi bi-x-circle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
                         {% endif %}
                     </div>
 
@@ -55,11 +55,11 @@
                         </label>
                         {{ form.password }}
                         {% if form.password.errors %}
-                            <div class="text-danger small mt-1">
-                                {% for error in form.password.errors %}
-                                    <div><i class="bi bi-x-circle me-1"></i>{{ error }}</div>
-                                {% endfor %}
-                            </div>
+                        <div class="text-danger small mt-1">
+                            {% for error in form.password.errors %}
+                            <div><i class="bi bi-x-circle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
                         {% endif %}
                     </div>
 
@@ -72,7 +72,7 @@
                 <!-- Footer link -->
                 <div class="text-center mt-4 pt-3 border-top">
                     <p class="text-secondary small mb-0">
-                        Don't have an account yet? 
+                        Don't have an account yet?
                         <a href="{% url 'register' %}" class="fw-bold text-primary">Register for free</a>
                     </p>
                 </div>
