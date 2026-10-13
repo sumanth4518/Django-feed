@@ -310,21 +310,19 @@ Whenever you push or update your code:
 4. *(Optional)* Provide a custom tag or use the default `django-feed` image name.
 5. Click the green **Run workflow** button.
 
-### 🏷️ 3. Automatic Tag Naming
+### 🏷️ 3. The Two Tags Generated Per Build
 
-The workflow automatically creates and pushes tags with each run:
-* **Commit SHA**: e.g., `sha-a1b2c3d` and `a1b2c3d` (directly mapped to the git commit).
-* **Build Run Number**: e.g., `build-1`, `build-2` (sequential counter in GitHub).
-* **Latest**: `latest` (always points to the newest build).
-* **Custom Tag**: *(Optional)* e.g., `v1.0.0` if specified when clicking the button.
+The workflow publishes **exactly 2 tags** for each build:
+1. **Commit SHA**: `sha-<short-sha>` (e.g. `sha-a1b2c3d` — permanently tied to the exact Git commit).
+2. **Your Custom Tag Text**: The text entered in the workflow popup (defaults to `latest`, or custom values like `v1.0.0`, `prod`, `dev`).
 
 ### 📥 4. Pulling the Image from Docker Hub
 
 ```bash
-# Pull by commit hash
+# Pull by the unique commit hash tag:
 docker pull <your-dockerhub-username>/django-feed:sha-<short-sha>
 
-# Pull latest
-docker pull <your-dockerhub-username>/django-feed:latest
+# Pull by the custom tag text you entered (e.g. latest, v1.0.0):
+docker pull <your-dockerhub-username>/django-feed:<custom-tag-text>
 ```
 

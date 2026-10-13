@@ -5,9 +5,9 @@ on:
   workflow_dispatch:
     inputs:
       custom_tag:
-        description: 'Optional custom tag (e.g., v1.0.0). Leave empty to use auto commit SHA & build number'
-        required: false
-        default: ''
+        description: 'Enter custom tag text (e.g. latest, v1.0.0, dev, prod)'
+        required: true
+        default: 'latest'
         type: string
       image_name:
         description: 'Docker Hub repository/image name'
@@ -63,23 +63,17 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Step 6: Extract Docker metadata and generate automatic tags based on commit & build
+      # Step 6: Extract Docker metadata - exactly 2 tags: Commit SHA and custom text
       - name: Extract Docker metadata & tags
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ steps.target.outputs.full_image_name }}
           tags: |
-            # Always tag latest
-            type=raw,value=latest
-            # Short commit SHA tag (e.g., sha-abc1234)
+            # Tag 1: Git commit SHA (e.g., sha-abc1234)
             type=sha,format=short,prefix=sha-
-            # Raw short commit SHA tag (e.g., abc1234)
-            type=sha,format=short,prefix=
-            # GitHub Run / build counter tag (e.g., build-1, build-2)
-            type=raw,value=build-${{ github.run_number }}
-            # Custom tag if provided in manual input
-            type=raw,value=${{ github.event.inputs.custom_tag }},enable=${{ github.event.inputs.custom_tag != '' }}
+            # Tag 2: The exact text passed in the workflow trigger (e.g., latest, v1.0, test)
+            type=raw,value=${{ github.event.inputs.custom_tag }}
 
       # Step 7: Build Docker image and push to Docker Hub
       - name: Build and push Docker image
@@ -105,16 +99,18 @@ jobs:
           echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
           echo "| **Docker Hub Target** | \`${{ steps.target.outputs.full_image_name }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Commit SHA** | \`${{ steps.target.outputs.short_sha }}\` (\`${{ github.sha }}\`) |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Build Run #** | \`${{ github.run_number }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Custom Tag Text** | \`${{ github.event.inputs.custom_tag }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Docker Hub Link** | [hub.docker.com/r/${{ steps.target.outputs.full_image_name }}](https://hub.docker.com/r/${{ steps.target.outputs.full_image_name }}) |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🏷️ Published Tags" >> $GITHUB_STEP_SUMMARY
+          echo "### 🏷️ The 2 Published Tags" >> $GITHUB_STEP_SUMMARY
           echo '```text' >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📥 How to Pull this Image" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "# Pull by Commit SHA tag:" >> $GITHUB_STEP_SUMMARY
           echo "docker pull ${{ steps.target.outputs.full_image_name }}:sha-${{ steps.target.outputs.short_sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "docker pull ${{ steps.target.outputs.full_image_name }}:latest" >> $GITHUB_STEP_SUMMARY
+          echo "# Pull by your Custom tag text:" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ steps.target.outputs.full_image_name }}:${{ github.event.inputs.custom_tag }}" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
