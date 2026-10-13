@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Feed - SocialApp{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-9">
+
+            <!-- Quick Create Post Card -->
+            <div class="create-post-card mb-4">
+                <div class="d-flex align-items-start gap-3 mb-3">
+                    <a href="{% url 'profile' username=user.username %}">
+                        <img src="{{ user.profile.avatar_url }}" alt="@{{ user.username }}" class="avatar-img">
+                    </a>
+                    <div class="flex-grow-1">
+                        <form method="POST" action="{% url 'feed' %}" enctype="multipart/form-data" id="quick-post-form">
+                            {% csrf_token %}
+                            
+                            <!-- Post Content Textarea -->
+                            <div class="mb-2">
+                                <textarea name="content" class="form-control border-0 bg-light p-3 rounded-4 post-content-textarea" rows="3" placeholder="What's on your mind, {{ user.first_name|default:user.username }}?"></textarea>
+                            </div>
+
+                            <!-- Live Image Preview Box (Initially Hidden) -->
+                            <div id="image-preview-container" class="image-preview-wrapper mb-3 d-none">
+                                <img id="image-preview" src="" alt="Selected Image Preview" class="image-preview-img">
+                                <button type="button" id="btn-remove-preview" class="btn-remove-preview" title="Remove image">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+                                <div>
+                                    <label for="post-image-input" class="btn btn-light btn-sm text-primary rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-2 cursor-pointer shadow-sm">
+                                        <i class="bi bi-image fs-5 text-success"></i>
+                                        <span>Photo / Image</span>
+                                    </label>
+                                    <input type="file" name="image" id="post-image-input" class="d-none" accept="image/jpeg,image/png,image/webp,image/jpg,image/gif">
+                                </div>
+
+                                <button type="submit" class="btn btn-primary-custom btn-sm px-4 py-2 d-inline-flex align-items-center gap-2">
+                                    <i class="bi bi-send-fill"></i>
+                                    <span>Publish</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feed Posts Stream -->
+            {% if posts %}
+                {% for post in posts %}
+                    <article class="post-card" id="post-{{ post.pk }}">
+                        <!-- Post Header -->
+                        <div class="post-header">
+                            <div class="post-user-info">
+                                <a href="{% url 'profile' username=post.user.username %}" class="text-decoration-none">
+                                    <img src="{{ post.user.profile.avatar_url }}" alt="@{{ post.user.username }}" class="avatar-img">
+                                </a>
+                                <div>
+                                    <a href="{% url 'profile' username=post.user.username %}" class="post-user-name text-decoration-none text-dark d-block">
+                                        {{ post.user.profile.display_name }}
+                                    </a>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <a href="{% url 'profile' username=post.user.username %}" class="post-user-handle text-muted text-decoration-none">
+                                            @{{ post.user.username }}
+                                        </a>
+                                        <span class="text-muted small">•</span>
+                                        <a href="{% url 'post_detail' pk=post.pk %}" class="post-timestamp text-decoration-none">
+                                            <i class="bi bi-clock"></i> {{ post.created_at|naturaltime }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Post Options Dropdown -->
+                            <div class="dropdown">
+                                <button class="btn btn-link text-muted p-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Post Options">
+                                    <i class="bi bi-three-dots fs-5"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
+                                    <li>
+                                        <a class="dropdown-item py-2" href="{% url 'post_detail' pk=post.pk %}">
+                                            <i class="bi bi-eye text-primary me-2"></i> View Full Post
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <button class="dropdown-item py-2 btn-copy-link" data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'post_detail' pk=post.pk %}">
+                                            <i class="bi bi-link-45deg text-secondary me-2"></i> Copy Link
+                                        </button>
+                                    </li>
+                                    {% if user == post.user %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item py-2" href="{% url 'post_edit' pk=post.pk %}">
+                                                <i class="bi bi-pencil text-secondary me-2"></i> Edit Post
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item py-2 text-danger" href="{% url 'post_delete' pk=post.pk %}">
+                                                <i class="bi bi-trash3 me-2"></i> Delete Post
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Post Text Content -->
+                        {% if post.content %}
+                            <div class="post-body">
+                                <p class="post-text mb-0">{{ post.content }}</p>
+                            </div>
+                        {% endif %}
+
+                        <!-- Post Image Content -->
+                        {% if post.image %}
+                            <div class="post-image-container">
+                                <a href="{% url 'post_detail' pk=post.pk %}">
+                                    <img src="{{ post.image.url }}" alt="Post image uploaded by {{ post.user.username }}" class="post-image" loading="lazy">
+                                </a>
+                            </div>
+                        {% endif %}
+
+                        <!-- Post Footer Actions -->
+                        <div class="post-footer">
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="post-action-btn post-action-like" title="Like this post">
+                                    <i class="bi bi-heart"></i>
+                                    <span>Like</span>
+                                </button>
+                                <a href="{% url 'post_detail' pk=post.pk %}" class="post-action-btn" title="View details & comments">
+                                    <i class="bi bi-chat-dots"></i>
+                                    <span>Comment</span>
+                                </a>
+                            </div>
+
+                            <button type="button" class="post-action-btn btn-copy-link" data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'post_detail' pk=post.pk %}" title="Share post link">
+                                <i class="bi bi-share"></i>
+                                <span>Share</span>
+                            </button>
+                        </div>
+                    </article>
+                {% endfor %}
+            {% else %}
+                <!-- Empty State -->
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-rss"></i>
+                    </div>
+                    <h4 class="fw-bold mb-2">No posts yet</h4>
+                    <p class="text-secondary small mb-4" style="max-width: 380px; margin: 0 auto;">
+                        Be the very first person to share a moment, write an update, or upload an image!
+                    </p>
+                    <a href="{% url 'post_create' %}" class="btn btn-primary-custom d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-plus-circle"></i>
+                        <span>Create Post</span>
+                    </a>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

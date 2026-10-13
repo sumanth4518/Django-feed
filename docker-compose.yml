@@ -1,0 +1,54 @@
+services:
+  # MySQL Database Container
+  db:
+    image: mysql:8.0
+    container_name: social_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: social_posts
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3307:3306" # Mapped to 3307 on host to prevent port collisions with local MySQL
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - social_network
+
+  # Django Web Application Container
+  web:
+    build: .
+    container_name: social_web
+    restart: unless-stopped
+    environment:
+      DB_NAME: social_posts
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      DB_HOST: db
+      DB_PORT: 3306
+      SECRET_KEY: django-insecure-docker-posts-key-2026-prod-xyz
+      DEBUG: "True"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,web,0.0.0.0"
+    volumes:
+      - .:/app
+      - media_data:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - social_network
+
+volumes:
+  mysql_data:
+  media_data:
+
+networks:
+  social_network:
+    driver: bridge

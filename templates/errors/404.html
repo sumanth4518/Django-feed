@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}404 - Page Not Found | SocialApp{% endblock %}
+
+{% block content %}
+<div class="container text-center py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="display-1 fw-bold text-primary mb-2">404</div>
+            <h2 class="fw-bold mb-3">Oops! Page Not Found</h2>
+            <p class="text-secondary mb-4">
+                The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+            </p>
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{% if user.is_authenticated %}{% url 'feed' %}{% else %}{% url 'home' %}{% endif %}" class="btn btn-primary-custom d-inline-flex align-items-center gap-2">
+                    <i class="bi bi-house-door-fill"></i>
+                    <span>Return to {% if user.is_authenticated %}Feed{% else %}Home{% endif %}</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

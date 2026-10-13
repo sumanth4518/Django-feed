@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}SocialApp - Share Your Moments & Connect{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div class="row align-items-center hero-section my-3 text-center text-lg-start">
+        <div class="col-lg-7 mb-4 mb-lg-0">
+            <div class="badge bg-primary-subtle text-primary fw-semibold px-3 py-2 rounded-pill mb-3">
+                <i class="bi bi-stars"></i> Simple, Fast & Beautiful Social Network
+            </div>
+            <h1 class="hero-title mb-3">
+                Share Your Moments, <span class="hero-gradient-text">Connect Instantly.</span>
+            </h1>
+            <p class="hero-subtitle mb-4">
+                Create engaging posts, share your favorite images, and discover authentic stories from a community of creators.
+            </p>
+            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
+                <a href="{% url 'register' %}" class="btn btn-primary-custom btn-lg px-4 py-3 shadow-sm d-inline-flex align-items-center justify-content-center gap-2">
+                    <span>Get Started Free</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+                <a href="{% url 'login' %}" class="btn btn-secondary-custom btn-lg px-4 py-3 d-inline-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    <span>Log In to Account</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="position-relative">
+                <!-- Preview Mock Card -->
+                <div class="custom-card p-3 shadow-lg" style="transform: rotate(2deg); max-width: 420px; margin: 0 auto;">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <img src="{% static 'images/default-avatar.svg' %}" alt="Avatar" class="avatar-sm">
+                        <div>
+                            <div class="fw-bold small">Sumanth Reddy</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">Just now • <i class="bi bi-globe"></i></div>
+                        </div>
+                    </div>
+                    <div class="mb-3 small">
+                        "Welcome to our new social platform! Share high-resolution photos and thoughts effortlessly."
+                    </div>
+                    <div class="rounded-3 overflow-hidden mb-3 bg-dark text-center p-4 text-white" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+                        <i class="bi bi-camera-fill display-4 d-block mb-2"></i>
+                        <span class="small opacity-75">Visual Media & High-Res Posts</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted small pt-2 border-top">
+                        <span><i class="bi bi-heart-fill text-danger me-1"></i> 24 Likes</span>
+                        <span><i class="bi bi-chat me-1"></i> 6 Comments</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature Grid -->
+    <div class="row g-4 my-5">
+        <div class="col-md-4">
+            <div class="custom-card p-4 h-100 custom-card-hover">
+                <div class="avatar-img d-flex align-items-center justify-content-center mb-3 bg-primary-subtle text-primary fs-4" style="width: 50px; height: 50px; border-radius: 12px;">
+                    <i class="bi bi-images"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Rich Image & Text Posts</h5>
+                <p class="text-secondary mb-0">
+                    Upload beautiful photos (JPG, PNG, WEBP) or write thoughtful text-only updates with instant responsive rendering.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="custom-card p-4 h-100 custom-card-hover">
+                <div class="avatar-img d-flex align-items-center justify-content-center mb-3 bg-success-subtle text-success fs-4" style="width: 50px; height: 50px; border-radius: 12px;">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Personal Profiles</h5>
+                <p class="text-secondary mb-0">
+                    Showcase your bio, profile avatar, member statistics, and manage your personalized timeline in one clean hub.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="custom-card p-4 h-100 custom-card-hover">
+                <div class="avatar-img d-flex align-items-center justify-content-center mb-3 bg-info-subtle text-info fs-4" style="width: 50px; height: 50px; border-radius: 12px;">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Robust Security & MySQL</h5>
+                <p class="text-secondary mb-0">
+                    Built on Django's enterprise-grade auth with CSRF tokens, password hashing, and MySQL relational storage.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Posts Preview (if any exist) -->
+    {% if recent_posts %}
+        <div class="my-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold mb-1">Recent Community Highlights</h3>
+                    <p class="text-muted mb-0">See what creators are posting right now.</p>
+                </div>
+                <a href="{% url 'register' %}" class="btn btn-outline-custom btn-sm">Join to See All</a>
+            </div>
+
+            <div class="row g-4">
+                {% for post in recent_posts %}
+                    <div class="col-md-4">
+                        <div class="custom-card p-3 h-100 d-flex flex-column custom-card-hover">
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <img src="{{ post.user.profile.avatar_url }}" alt="@{{ post.user.username }}" class="avatar-sm">
+                                <div>
+                                    <div class="fw-bold small">@{{ post.user.username }}</div>
+                                    <small class="text-muted">{{ post.created_at|naturaltime }}</small>
+                                </div>
+                            </div>
+                            {% if post.content %}
+                                <p class="text-secondary small mb-3 flex-grow-1">{{ post.content|truncatechars:120 }}</p>
+                            {% endif %}
+                            {% if post.image %}
+                                <div class="rounded-3 overflow-hidden bg-dark mb-2" style="height: 180px;">
+                                    <img src="{{ post.image.url }}" alt="Post image" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Bottom CTA banner -->
+    <div class="custom-card p-5 my-5 text-center text-white" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);">
+        <h2 class="fw-bold mb-3">Ready to share your story?</h2>
+        <p class="mb-4 opacity-90 mx-auto" style="max-width: 500px;">
+            Join our friendly community today. Sign up in less than 30 seconds and start posting immediately.
+        </p>
+        <a href="{% url 'register' %}" class="btn btn-light btn-lg px-4 py-2 text-primary fw-bold shadow">
+            Create Free Account
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,120 @@
+name: Build and Push Docker Image to Docker Hub
+
+on:
+  # Manual trigger via "Run workflow" button in GitHub Actions UI
+  workflow_dispatch:
+    inputs:
+      custom_tag:
+        description: 'Optional custom tag (e.g., v1.0.0). Leave empty to use auto commit SHA & build number'
+        required: false
+        default: ''
+        type: string
+      image_name:
+        description: 'Docker Hub repository/image name'
+        required: false
+        default: 'django-feed'
+        type: string
+
+  # Optional automated trigger on code push (uncomment when ready):
+  # push:
+  #   branches:
+  #     - main
+  #     - master
+
+env:
+  DEFAULT_IMAGE_NAME: django-feed
+
+jobs:
+  build-and-push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Step 2: Set up QEMU (for multi-architecture builds if needed)
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # Step 3: Set up Docker Buildx (layer caching & advanced build features)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Step 4: Determine Image Name & Short Commit Hash
+      - name: Prepare Image Metadata
+        id: target
+        run: |
+          # Use provided input or fallback to default image name
+          IMG_NAME="${{ github.event.inputs.image_name || env.DEFAULT_IMAGE_NAME }}"
+          echo "full_image_name=${{ secrets.DOCKERHUB_USERNAME }}/$IMG_NAME" >> $GITHUB_OUTPUT
+          
+          # Compute 7-character short commit SHA
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+
+      # Step 5: Log in to Docker Hub using GitHub Secrets
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Step 6: Extract Docker metadata and generate automatic tags based on commit & build
+      - name: Extract Docker metadata & tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.target.outputs.full_image_name }}
+          tags: |
+            # Always tag latest
+            type=raw,value=latest
+            # Short commit SHA tag (e.g., sha-abc1234)
+            type=sha,format=short,prefix=sha-
+            # Raw short commit SHA tag (e.g., abc1234)
+            type=sha,format=short,prefix=
+            # GitHub Run / build counter tag (e.g., build-1, build-2)
+            type=raw,value=build-${{ github.run_number }}
+            # Custom tag if provided in manual input
+            type=raw,value=${{ github.event.inputs.custom_tag }},enable=${{ github.event.inputs.custom_tag != '' }}
+
+      # Step 7: Build Docker image and push to Docker Hub
+      - name: Build and push Docker image
+        id: docker_build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Use GitHub Actions Cache for faster build times
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Step 8: Post a rich summary directly in the GitHub Actions Run page
+      - name: Generate Deployment Summary
+        if: always()
+        run: |
+          echo "## 🚀 Docker Image Built & Pushed Successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Docker Hub Target** | \`${{ steps.target.outputs.full_image_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit SHA** | \`${{ steps.target.outputs.short_sha }}\` (\`${{ github.sha }}\`) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Build Run #** | \`${{ github.run_number }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Docker Hub Link** | [hub.docker.com/r/${{ steps.target.outputs.full_image_name }}](https://hub.docker.com/r/${{ steps.target.outputs.full_image_name }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🏷️ Published Tags" >> $GITHUB_STEP_SUMMARY
+          echo '```text' >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📥 How to Pull this Image" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ steps.target.outputs.full_image_name }}:sha-${{ steps.target.outputs.short_sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ steps.target.outputs.full_image_name }}:latest" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

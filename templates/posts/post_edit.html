@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Post - SocialApp{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="custom-card p-4 p-sm-5 shadow-sm">
+                <!-- Header -->
+                <div class="d-flex align-items-center justify-content-between pb-3 mb-4 border-bottom">
+                    <div>
+                        <h4 class="fw-bold mb-1">Edit Post</h4>
+                        <small class="text-muted">Modify your thoughts or update the attached photo</small>
+                    </div>
+                    <a href="{% url 'post_detail' pk=post.pk %}" class="btn btn-outline-secondary btn-sm rounded-pill">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                </div>
+
+                <!-- Non-field errors -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger py-2 px-3 small rounded-3 mb-3">
+                        {% for error in form.non_field_errors %}
+                            <div><i class="bi bi-exclamation-circle-fill me-1"></i> {{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Form -->
+                <form method="POST" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="remove_image" id="id_remove_image" value="false">
+
+                    <!-- Content Textarea -->
+                    <div class="mb-3">
+                        <label for="{{ form.content.id_for_label }}" class="form-label">
+                            <i class="bi bi-pencil-square me-1 text-primary"></i> Post Content
+                        </label>
+                        {{ form.content }}
+                        {% if form.content.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.content.errors %}
+                                    <div><i class="bi bi-x-circle me-1"></i>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Current Image Display if exists -->
+                    {% if post.image %}
+                        <div class="mb-3" id="current-image-section">
+                            <label class="form-label">Current Attached Image</label>
+                            <div class="position-relative border rounded-3 p-2 bg-light d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="{{ post.image.url }}" alt="Current post image" style="height: 60px; width: 60px; object-fit: cover; border-radius: 8px;">
+                                    <span class="small text-muted text-break">{{ post.image.name }}</span>
+                                </div>
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="document.getElementById('id_remove_image').value='true'; document.getElementById('current-image-section').style.display='none';">
+                                    <i class="bi bi-trash"></i> Remove Image
+                                </button>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Replace / Upload Image -->
+                    <div class="mb-4">
+                        <label for="post-image-input" class="form-label d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-image me-1 text-success"></i> {% if post.image %}Replace Photo (Optional){% else %}Attach Photo (Optional){% endif %}</span>
+                            <span class="text-muted small">JPG, PNG, WEBP (Max 10MB)</span>
+                        </label>
+                        {{ form.image }}
+                        {% if form.image.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.image.errors %}
+                                    <div><i class="bi bi-x-circle me-1"></i>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Live Image Preview for New Upload -->
+                    <div id="image-preview-container" class="image-preview-wrapper mb-4 d-none">
+                        <img id="image-preview" src="" alt="New Image Preview" class="image-preview-img">
+                        <button type="button" id="btn-remove-preview" class="btn-remove-preview" title="Remove selected image">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a href="{% url 'post_detail' pk=post.pk %}" class="btn btn-secondary-custom">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary-custom d-inline-flex align-items-center gap-2">
+                            <i class="bi bi-check2"></i>
+                            <span>Save Changes</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

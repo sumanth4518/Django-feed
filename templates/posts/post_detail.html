@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Post by @{{ post.user.username }} - SocialApp{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-9">
+
+            <!-- Back Navigation Link -->
+            <div class="mb-3">
+                <a href="{% url 'feed' %}" class="btn btn-link text-decoration-none text-muted p-0 d-inline-flex align-items-center gap-1">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Back to Feed</span>
+                </a>
+            </div>
+
+            <!-- Single Post Card -->
+            <article class="post-card shadow-md">
+                <!-- Header -->
+                <div class="post-header">
+                    <div class="post-user-info">
+                        <a href="{% url 'profile' username=post.user.username %}" class="text-decoration-none">
+                            <img src="{{ post.user.profile.avatar_url }}" alt="@{{ post.user.username }}" class="avatar-img">
+                        </a>
+                        <div>
+                            <a href="{% url 'profile' username=post.user.username %}" class="post-user-name text-decoration-none text-dark d-block">
+                                {{ post.user.profile.display_name }}
+                            </a>
+                            <div class="d-flex align-items-center gap-2">
+                                <a href="{% url 'profile' username=post.user.username %}" class="post-user-handle text-muted text-decoration-none">
+                                    @{{ post.user.username }}
+                                </a>
+                                <span class="text-muted small">•</span>
+                                <span class="post-timestamp">
+                                    <i class="bi bi-calendar3"></i> {{ post.created_at|date:"F d, Y - g:i A" }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Owner Options -->
+                    <div class="dropdown">
+                        <button class="btn btn-link text-muted p-1" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots fs-5"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
+                            <li>
+                                <button class="dropdown-item py-2 btn-copy-link" data-url="{{ request.build_absolute_uri }}">
+                                    <i class="bi bi-link-45deg text-secondary me-2"></i> Copy Link
+                                </button>
+                            </li>
+                            {% if is_owner %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item py-2" href="{% url 'post_edit' pk=post.pk %}">
+                                        <i class="bi bi-pencil text-secondary me-2"></i> Edit Post
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 text-danger" href="{% url 'post_delete' pk=post.pk %}">
+                                        <i class="bi bi-trash3 me-2"></i> Delete Post
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                {% if post.content %}
+                    <div class="post-body">
+                        <p class="post-text mb-0 fs-5">{{ post.content }}</p>
+                    </div>
+                {% endif %}
+
+                <!-- Full Image -->
+                {% if post.image %}
+                    <div class="post-image-container">
+                        <img src="{{ post.image.url }}" alt="Post image" class="post-image">
+                    </div>
+                {% endif %}
+
+                <!-- Footer -->
+                <div class="post-footer">
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="post-action-btn post-action-like" title="Like this post">
+                            <i class="bi bi-heart"></i>
+                            <span>Like</span>
+                        </button>
+                    </div>
+
+                    <button type="button" class="post-action-btn btn-copy-link" data-url="{{ request.build_absolute_uri }}">
+                        <i class="bi bi-share"></i>
+                        <span>Share Post</span>
+                    </button>
+                </div>
+            </article>
+
+            <!-- Author Mini Card -->
+            <div class="custom-card p-4 mt-4 bg-white">
+                <div class="d-flex align-items-center gap-3">
+                    <a href="{% url 'profile' username=post.user.username %}">
+                        <img src="{{ post.user.profile.avatar_url }}" alt="@{{ post.user.username }}" class="avatar-lg shadow-sm" style="width: 64px; height: 64px;">
+                    </a>
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <a href="{% url 'profile' username=post.user.username %}" class="fw-bold text-dark text-decoration-none fs-5">
+                                {{ post.user.profile.display_name }}
+                            </a>
+                            <a href="{% url 'profile' username=post.user.username %}" class="btn btn-outline-custom btn-sm">
+                                View Profile
+                            </a>
+                        </div>
+                        <div class="text-muted small mb-2">@{{ post.user.username }}</div>
+                        {% if post.user.profile.bio %}
+                            <p class="text-secondary small mb-0">{{ post.user.profile.bio }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

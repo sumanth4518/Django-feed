@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}500 - Server Error | SocialApp{% endblock %}
+
+{% block content %}
+<div class="container text-center py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="display-1 fw-bold text-warning mb-2">500</div>
+            <h2 class="fw-bold mb-3">Internal Server Error</h2>
+            <p class="text-secondary mb-4">
+                Something unexpected happened on our server. We are looking into it. Please try again shortly.
+            </p>
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{% if user.is_authenticated %}{% url 'feed' %}{% else %}{% url 'home' %}{% endif %}" class="btn btn-primary-custom d-inline-flex align-items-center gap-2">
+                    <i class="bi bi-house-door-fill"></i>
+                    <span>Return to Home</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

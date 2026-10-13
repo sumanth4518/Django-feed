@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create New Post - SocialApp{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="custom-card p-4 p-sm-5 shadow-sm">
+                <!-- Header -->
+                <div class="d-flex align-items-center justify-content-between pb-3 mb-4 border-bottom">
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="{{ user.profile.avatar_url }}" alt="@{{ user.username }}" class="avatar-img">
+                        <div>
+                            <h4 class="fw-bold mb-0">Create New Post</h4>
+                            <small class="text-muted">Posting as @{{ user.username }}</small>
+                        </div>
+                    </div>
+                    <a href="{% url 'feed' %}" class="btn btn-outline-secondary btn-sm rounded-pill">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                </div>
+
+                <!-- Non-field errors -->
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger py-2 px-3 small rounded-3 mb-3">
+                        {% for error in form.non_field_errors %}
+                            <div><i class="bi bi-exclamation-circle-fill me-1"></i> {{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Form -->
+                <form method="POST" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Content Textarea -->
+                    <div class="mb-3">
+                        <label for="{{ form.content.id_for_label }}" class="form-label">
+                            <i class="bi bi-pencil-square me-1 text-primary"></i> What's on your mind?
+                        </label>
+                        {{ form.content }}
+                        {% if form.content.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.content.errors %}
+                                    <div><i class="bi bi-x-circle me-1"></i>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="mb-4">
+                        <label for="post-image-input" class="form-label d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-image me-1 text-success"></i> Attach Photo (Optional)</span>
+                            <span class="text-muted small">JPG, PNG, WEBP (Max 10MB)</span>
+                        </label>
+                        {{ form.image }}
+                        {% if form.image.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.image.errors %}
+                                    <div><i class="bi bi-x-circle me-1"></i>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Live Image Preview Container -->
+                    <div id="image-preview-container" class="image-preview-wrapper mb-4 d-none">
+                        <img id="image-preview" src="" alt="Post Preview" class="image-preview-img">
+                        <button type="button" id="btn-remove-preview" class="btn-remove-preview" title="Remove selected image">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+
+                    <!-- Submit Actions -->
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a href="{% url 'feed' %}" class="btn btn-secondary-custom">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary-custom d-inline-flex align-items-center gap-2">
+                            <i class="bi bi-send-fill"></i>
+                            <span>Publish Post</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
